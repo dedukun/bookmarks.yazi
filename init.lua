@@ -30,20 +30,25 @@ local function dump(o)
 end
 
 local function save_bookmark(idx)
-	ya.err("SAVE BOOKMARK")
-
 	if idx == -1 then
 		return
 	end
 
+	local folder = Folder:by_kind(Folder.CURRENT)
+
 	local key = SUPPORTED_KEYS[idx].on
 
 	state.bookmarks = state.bookmarks or {}
-	state.bookmarks[key] = { cursor = 1, path = "ola" }
+	state.bookmarks[key] = { cursor = folder.cursor, path = tostring(folder.cwd) }
 end
 
-local function jump_to_bookmark()
+local function jump_to_bookmark(bookmark)
 	ya.err("JUMP TO BOOKMARK")
+
+	state.bookmarks = state.bookmarks or {}
+
+	ya.err("BOOKMARK: " .. bookmark)
+	ya.err("BOOKMARK2: " .. dump(state.bookmarks[bookmark]))
 end
 
 local function next(sync, args)
@@ -57,33 +62,28 @@ return {
 			return
 		end
 
-		ya.err("ARGS: " .. dump(args))
-
 		if action == "set" then
-			ya.err("SET BOOKMARK")
-
 			local key = args[2]
 			if not key then
 				next(false, { "_set" })
 			else
-				ya.err("SET BOOKMARK")
 				save_bookmark(tonumber(key))
 			end
 		elseif action == "_set" then
-			ya.err("_SET")
-
 			local key = ya.which({
 				cands = SUPPORTED_KEYS,
 				silent = true,
 			})
 
-			ya.err(key)
+			if not key then
+				-- selection was cancelled
+				return
+			end
+
 			next(true, { "set", key })
 		elseif action == "jump" then
-			ya.err("JUMP BOOKMARK")
-
-			local key = args[2]
-			if not key then
+			local bookmark = args[2]
+			if not bookmark then
 				-- tried to use ya.sync but was unsuccessful, doing this way for the moment
 				if state.bookmarks then
 					local arguments = { "_jump" }
@@ -93,18 +93,17 @@ return {
 					next(false, arguments)
 				end
 			else
-				ya.err("JUMP TO KEY: " .. key)
+				jump_to_bookmark(bookmark)
 			end
 		elseif action == "_jump" then
-			ya.err("_JUMP")
-
 			if #args == 1 then
+				-- Should never enter here, but just to be safe
+				ya.err("No arguments for  '_jump'")
 				return
 			end
 
 			local marked_keys = {}
 			for i = 2, #args, 1 do
-				ya.err("I: " .. i)
 				table.insert(marked_keys, { on = args[i], desc = "Jump to bookmark '" .. args[i] .. "'" })
 			end
 
@@ -112,7 +111,12 @@ return {
 				cands = marked_keys,
 			})
 
-			next(true, { "jump", selected_bookmark })
+			if not selected_bookmark then
+				-- selection was cancelled
+				return
+			end
+
+			next(true, { "jump", marked_keys[selected_bookmark].on })
 		end
 	end,
 }
