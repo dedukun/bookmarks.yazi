@@ -37,6 +37,15 @@ local function jump_to_bookmark(bookmark)
 	ya.manager_emit("arrow", { selected_bookmark.cursor })
 end
 
+local function delete_bookmark(bookmark)
+	state.bookmarks = state.bookmarks or {}
+	state.bookmarks[bookmark] = nil
+end
+
+local function delete_all_bookmarks()
+	state.bookmarks = nil
+end
+
 local function next(sync, args)
 	ya.manager_emit("plugin", { "bookmarks", sync = sync, args = table.concat(args, " ") })
 end
@@ -67,12 +76,12 @@ return {
 			end
 
 			next(true, { "set", key })
-		elseif action == "jump" then
+		elseif action == "jump" or action == "delete" then
 			local bookmark = args[2]
 			if not bookmark then
 				-- tried to use ya.sync but was unsuccessful, doing this way for the moment
 				if state.bookmarks then
-					local arguments = { "_jump" }
+					local arguments = { "_" .. action }
 					for k, _ in pairs(state.bookmarks) do
 						table.insert(arguments, k)
 						table.insert(arguments, state.bookmarks[k].path)
@@ -80,9 +89,13 @@ return {
 					next(false, arguments)
 				end
 			else
-				jump_to_bookmark(bookmark)
+				if action == "jump" then
+					jump_to_bookmark(bookmark)
+				elseif action == "delete" then
+					delete_bookmark(bookmark)
+				end
 			end
-		elseif action == "_jump" then
+		elseif action == "_jump" or action == "_delete" then
 			if #args == 1 then
 				-- Should never enter here, but just to be safe
 				return
@@ -102,7 +115,9 @@ return {
 				return
 			end
 
-			next(true, { "jump", marked_keys[selected_bookmark].on })
+			next(true, { string.sub(action, 2), marked_keys[selected_bookmark].on })
+		elseif action == "deleteall" then
+			delete_all_bookmarks()
 		end
 	end,
 }
