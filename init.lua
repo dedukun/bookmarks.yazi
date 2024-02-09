@@ -14,21 +14,6 @@ local SUPPORTED_KEYS = {
 	{ on = "u"}, { on = "v"}, { on = "w"}, { on = "x"}, { on = "y"}, { on = "z"},
 }
 
-local function dump(o)
-	if type(o) == "table" then
-		local s = "{ "
-		for k, v in pairs(o) do
-			if type(k) ~= "number" then
-				k = '"' .. k .. '"'
-			end
-			s = s .. "[" .. k .. "] = " .. dump(v) .. ","
-		end
-		return s .. "} "
-	else
-		return tostring(o)
-	end
-end
-
 local function save_bookmark(idx)
 	if idx == -1 then
 		return
@@ -99,7 +84,6 @@ return {
 		elseif action == "_jump" then
 			if #args == 1 then
 				-- Should never enter here, but just to be safe
-				ya.err("No arguments for  '_jump'")
 				return
 			end
 
