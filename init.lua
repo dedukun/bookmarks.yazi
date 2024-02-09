@@ -43,12 +43,13 @@ local function save_bookmark(idx)
 end
 
 local function jump_to_bookmark(bookmark)
-	ya.err("JUMP TO BOOKMARK")
-
 	state.bookmarks = state.bookmarks or {}
 
-	ya.err("BOOKMARK: " .. bookmark)
-	ya.err("BOOKMARK2: " .. dump(state.bookmarks[bookmark]))
+	local selected_bookmark = state.bookmarks[bookmark]
+
+	ya.manager_emit("cd", { selected_bookmark.path })
+	ya.manager_emit("arrow", { -99999999 })
+	ya.manager_emit("arrow", { selected_bookmark.cursor })
 end
 
 local function next(sync, args)
