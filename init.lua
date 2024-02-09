@@ -75,6 +75,7 @@ return {
 					local arguments = { "_jump" }
 					for k, _ in pairs(state.bookmarks) do
 						table.insert(arguments, k)
+						table.insert(arguments, state.bookmarks[k].path)
 					end
 					next(false, arguments)
 				end
@@ -88,8 +89,8 @@ return {
 			end
 
 			local marked_keys = {}
-			for i = 2, #args, 1 do
-				table.insert(marked_keys, { on = args[i], desc = "Jump to bookmark '" .. args[i] .. "'" })
+			for i = 2, #args, 2 do
+				table.insert(marked_keys, { on = args[i], desc = args[i + 1] })
 			end
 
 			local selected_bookmark = ya.which({
