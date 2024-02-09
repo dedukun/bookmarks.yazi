@@ -1,6 +1,6 @@
 # Bookmarks.yazi
 
-Simple implementation of [vim-like mark's](https://neovim.io/doc/user/motion.html#mark-motions) for [yazi](https://github.com/sxyazi/yazi).
+Simple implementation of [vi-like marks](https://neovim.io/doc/user/motion.html#mark-motions) for [yazi](https://github.com/sxyazi/yazi).
 
 ```toml
 [[manager.prepend_keymap]]
