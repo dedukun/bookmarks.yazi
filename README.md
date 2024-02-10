@@ -2,6 +2,10 @@
 
 A [Yazi](https://github.com/sxyazi/yazi) plugin that adds the basic functionality of [vi-like marks](https://neovim.io/doc/user/motion.html#mark-motions).
 
+https://github.com/dedukun/bookmarks.yazi/assets/25795432/9a9fe345-dd06-442e-99f1-8475ab22fad5
+
+## Usage
+
 ```toml
 [[manager.prepend_keymap]]
 on = [ "m" ]
