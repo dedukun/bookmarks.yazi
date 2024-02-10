@@ -14,41 +14,20 @@ local SUPPORTED_KEYS = {
 	{ on = "u"}, { on = "v"}, { on = "w"}, { on = "x"}, { on = "y"}, { on = "z"},
 }
 
-local function save_bookmark(idx)
-	if idx == -1 then
-		return
-	end
-
-	local folder = Folder:by_kind(Folder.CURRENT)
-
-	local key = SUPPORTED_KEYS[idx].on
-
+local save_bookmark = ya.sync(function(idx)
 	state.bookmarks = state.bookmarks or {}
-	state.bookmarks[key] = { cursor = folder.cursor, path = tostring(folder.cwd) }
-end
+	state.bookmarks[#state.bookmarks + 1] = {
+		on = SUPPORTED_KEYS[idx].on,
+		desc = tostring(folder.cwd),
+		cursor = Folder:by_kind(Folder.CURRENT).cursor,
+	}
+end)
 
-local function jump_to_bookmark(bookmark)
-	state.bookmarks = state.bookmarks or {}
+local all_bookmarks = ya.sync(function() return state.bookmarks or {} end)
 
-	local selected_bookmark = state.bookmarks[bookmark]
+local delete_bookmark = ya.sync(function(idx) table.remove(state.bookmarks, idx) end)
 
-	ya.manager_emit("cd", { selected_bookmark.path })
-	ya.manager_emit("arrow", { -99999999 })
-	ya.manager_emit("arrow", { selected_bookmark.cursor })
-end
-
-local function delete_bookmark(bookmark)
-	state.bookmarks = state.bookmarks or {}
-	state.bookmarks[bookmark] = nil
-end
-
-local function delete_all_bookmarks()
-	state.bookmarks = nil
-end
-
-local function next(sync, args)
-	ya.manager_emit("plugin", { "bookmarks", sync = sync, args = table.concat(args, " ") })
-end
+local delete_all_bookmarks = ya.sync(function() state.bookmarks = nil end)
 
 return {
 	entry = function(_, args)
@@ -57,67 +36,30 @@ return {
 			return
 		end
 
-		if action == "set" then
-			local key = args[2]
-			if not key then
-				next(false, { "_set" })
-			else
-				save_bookmark(tonumber(key))
+		if action == "save" then
+			local key = ya.which { cands = SUPPORTED_KEYS, silent = true }
+			if key then
+				save_bookmark(key)
 			end
-		elseif action == "_set" then
-			local key = ya.which({
-				cands = SUPPORTED_KEYS,
-				silent = true,
-			})
+			return
+		end
 
-			if not key then
-				-- selection was cancelled
-				return
-			end
+		if action == "delete_all" then
+			return delete_all_bookmarks()
+		end
 
-			next(true, { "set", key })
-		elseif action == "jump" or action == "delete" then
-			local bookmark = args[2]
-			if not bookmark then
-				-- tried to use ya.sync but was unsuccessful, doing this way for the moment
-				if state.bookmarks then
-					local arguments = { "_" .. action }
-					for k, _ in pairs(state.bookmarks) do
-						table.insert(arguments, k)
-						table.insert(arguments, state.bookmarks[k].path)
-					end
-					next(false, arguments)
-				end
-			else
-				if action == "jump" then
-					jump_to_bookmark(bookmark)
-				elseif action == "delete" then
-					delete_bookmark(bookmark)
-				end
-			end
-		elseif action == "_jump" or action == "_delete" then
-			if #args == 1 then
-				-- Should never enter here, but just to be safe
-				return
-			end
+		local bookmarks = all_bookmarks()
+		local selected = #bookmarks > 0 and ya.which { cands = bookmarks }
+		if not selected then
+			return
+		end
 
-			local marked_keys = {}
-			for i = 2, #args, 2 do
-				table.insert(marked_keys, { on = args[i], desc = args[i + 1] })
-			end
-
-			local selected_bookmark = ya.which({
-				cands = marked_keys,
-			})
-
-			if not selected_bookmark then
-				-- selection was cancelled
-				return
-			end
-
-			next(true, { string.sub(action, 2), marked_keys[selected_bookmark].on })
-		elseif action == "deleteall" then
-			delete_all_bookmarks()
+		if action == "jump" then
+			ya.manager_emit("cd", { bookmarks[selected].desc })
+			ya.manager_emit("arrow", { -99999999 })
+			ya.manager_emit("arrow", { bookmarks[selected].cursor })
+		elseif action == "delete" then
+			delete_bookmark(selected)
 		end
 	end,
 }
