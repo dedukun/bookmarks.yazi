@@ -14,7 +14,7 @@ local SUPPORTED_KEYS = {
 	{ on = "u"}, { on = "v"}, { on = "w"}, { on = "x"}, { on = "y"}, { on = "z"},
 }
 
-local save_bookmark = ya.sync(function(idx)
+local save_bookmark = ya.sync(function(state, idx)
 	local folder = Folder:by_kind(Folder.CURRENT)
 
 	state.bookmarks = state.bookmarks or {}
@@ -25,11 +25,17 @@ local save_bookmark = ya.sync(function(idx)
 	}
 end)
 
-local all_bookmarks = ya.sync(function() return state.bookmarks or {} end)
+local all_bookmarks = ya.sync(function(state)
+	return state.bookmarks or {}
+end)
 
-local delete_bookmark = ya.sync(function(idx) table.remove(state.bookmarks, idx) end)
+local delete_bookmark = ya.sync(function(state, idx)
+	table.remove(state.bookmarks, idx)
+end)
 
-local delete_all_bookmarks = ya.sync(function() state.bookmarks = nil end)
+local delete_all_bookmarks = ya.sync(function(state)
+	state.bookmarks = nil
+end)
 
 return {
 	entry = function(_, args)
@@ -39,7 +45,7 @@ return {
 		end
 
 		if action == "save" then
-			local key = ya.which { cands = SUPPORTED_KEYS, silent = true }
+			local key = ya.which({ cands = SUPPORTED_KEYS, silent = true })
 			if key then
 				save_bookmark(key)
 			end
@@ -51,7 +57,7 @@ return {
 		end
 
 		local bookmarks = all_bookmarks()
-		local selected = #bookmarks > 0 and ya.which { cands = bookmarks }
+		local selected = #bookmarks > 0 and ya.which({ cands = bookmarks })
 		if not selected then
 			return
 		end
