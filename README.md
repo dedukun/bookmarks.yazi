@@ -61,4 +61,4 @@ require("bookmarks"):setup({
 })
 ```
 
-For the `new` and `delete` messages, you can use `<key>` and `<folder>`, which will be replaced by the repective new/deleted bookmark's associated key and folder.
+For the `new` and `delete` messages, you can use `<key>` and `<folder>`, which will be replaced by the respective new/deleted bookmark's associated key and folder.
