@@ -23,6 +23,17 @@ local save_bookmark = ya.sync(function(state, idx)
 		desc = tostring(folder.cwd),
 		cursor = folder.cursor,
 	}
+
+	if state.notify.enable then
+		local description = state.notify.format
+		description, _ = description:gsub("<key>", SUPPORTED_KEYS[idx].on)
+		description, _ = description:gsub("<folder>", tostring(folder.cwd))
+		ya.notify {
+			title = "Bookmarks",
+			content = description,
+			timeout = state.notify.timeout,
+		}
+	end
 end)
 
 local all_bookmarks = ya.sync(function(state) return state.bookmarks or {} end)
@@ -62,6 +73,24 @@ return {
 			ya.manager_emit("arrow", { bookmarks[selected].cursor })
 		elseif action == "delete" then
 			delete_bookmark(selected)
+		end
+	end,
+	setup = function(state, args)
+		if not args then
+			return
+		end
+
+		state.notify = { enable = false, timeout = 2, format = "New bookmark in '<key>' -> '<folder>'" }
+		if args.notify ~= nil then
+			if type(args.notify.enable) == "boolean" then
+				state.notify.enable = args.notify.enable
+			end
+			if type(args.notify.timeout) == "number" then
+				state.notify.timeout = args.notify.timeout
+			end
+			if type(args.notify.format) == "string" then
+				state.notify.format = args.notify.format
+			end
 		end
 	end,
 }
