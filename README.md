@@ -17,7 +17,7 @@ git clone https://github.com/dedukun/bookmarks.yazi.git ~/.config/yazi/plugins/b
 git clone https://github.com/dedukun/bookmarks.yazi.git %AppData%\yazi\config\plugins\bookmarks.yazi
 ```
 
-## Usage
+## Configuration
 
 Add this to your `keymap.toml`:
 
@@ -42,3 +42,23 @@ on = [ "b", "D" ]
 exec = "plugin bookmarks --args=delete_all"
 desc = "Delete all bookmarks"
 ```
+
+---
+
+Additionally you can enable notifications via the plugin's `setup` function in `init.lua`, the following are the default configurations:
+
+```lua
+require("bookmarks"):setup({
+	notify = {
+		enable = false,
+		timeout = 1,
+		message = {
+			new = "New bookmark '<key>' -> '<folder>'",
+			delete = "Deleted bookmark in '<key>'",
+			delete_all = "Deleted all bookmarks",
+		},
+	},
+})
+```
+
+For the `new` and `delete` messages, you can use `<key>` and `<folder>`, which will be replaced by the respective new/deleted bookmark's associated key and folder.

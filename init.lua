@@ -23,13 +23,47 @@ local save_bookmark = ya.sync(function(state, idx)
 		desc = tostring(folder.cwd),
 		cursor = folder.cursor,
 	}
+
+	if state.notify.enable then
+		local message = state.notify.message.new
+		message, _ = message:gsub("<key>", SUPPORTED_KEYS[idx].on)
+		message, _ = message:gsub("<folder>", tostring(folder.cwd))
+		ya.notify {
+			title = "Bookmarks",
+			content = message,
+			timeout = state.notify.timeout,
+		}
+	end
 end)
 
 local all_bookmarks = ya.sync(function(state) return state.bookmarks or {} end)
 
-local delete_bookmark = ya.sync(function(state, idx) table.remove(state.bookmarks, idx) end)
+local delete_bookmark = ya.sync(function(state, idx)
+	if state.notify.enable then
+		local message = state.notify.message.delete
+		message, _ = message:gsub("<key>", state.bookmarks[idx].on)
+		message, _ = message:gsub("<folder>", state.bookmarks[idx].desc)
+		ya.notify {
+			title = "Bookmarks",
+			content = message,
+			timeout = state.notify.timeout,
+		}
+	end
 
-local delete_all_bookmarks = ya.sync(function(state) state.bookmarks = nil end)
+	table.remove(state.bookmarks, idx)
+end)
+
+local delete_all_bookmarks = ya.sync(function(state)
+	state.bookmarks = nil
+
+	if state.notify.enable then
+		ya.notify {
+			title = "Bookmarks",
+			content = state.notify.message.delete_all,
+			timeout = state.notify.timeout,
+		}
+	end
+end)
 
 return {
 	entry = function(_, args)
@@ -62,6 +96,40 @@ return {
 			ya.manager_emit("arrow", { bookmarks[selected].cursor })
 		elseif action == "delete" then
 			delete_bookmark(selected)
+		end
+	end,
+	setup = function(state, args)
+		if not args then
+			return
+		end
+
+		state.notify = {
+			enable = false,
+			timeout = 1,
+			message = {
+				new = "New bookmark '<key>' -> '<folder>'",
+				delete = "Deleted bookmark in '<key>'",
+				delete_all = "Deleted all bookmarks",
+			},
+		}
+		if type(args.notify) == "table" then
+			if type(args.notify.enable) == "boolean" then
+				state.notify.enable = args.notify.enable
+			end
+			if type(args.notify.timeout) == "number" then
+				state.notify.timeout = args.notify.timeout
+			end
+			if type(args.notify.message) == "table" then
+				if type(args.notify.message.new) == "string" then
+					state.notify.message.new = args.notify.message.new
+				end
+				if type(args.notify.message.delete) == "string" then
+					state.notify.message.delete = args.notify.message.delete
+				end
+				if type(args.notify.message.delete_all) == "string" then
+					state.notify.message.delete_all = args.notify.message.delete_all
+				end
+			end
 		end
 	end,
 }
