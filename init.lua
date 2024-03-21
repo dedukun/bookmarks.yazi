@@ -24,7 +24,7 @@ local save_bookmark = ya.sync(function(state, idx)
 		cursor = folder.cursor,
 	}
 
-	if state.notify.enable then
+	if state.notify and state.notify.enable then
 		local message = state.notify.message.new
 		message, _ = message:gsub("<key>", SUPPORTED_KEYS[idx].on)
 		message, _ = message:gsub("<folder>", tostring(folder.cwd))
@@ -39,7 +39,7 @@ end)
 local all_bookmarks = ya.sync(function(state) return state.bookmarks or {} end)
 
 local delete_bookmark = ya.sync(function(state, idx)
-	if state.notify.enable then
+	if state.notify and state.notify.enable then
 		local message = state.notify.message.delete
 		message, _ = message:gsub("<key>", state.bookmarks[idx].on)
 		message, _ = message:gsub("<folder>", state.bookmarks[idx].desc)
@@ -56,7 +56,7 @@ end)
 local delete_all_bookmarks = ya.sync(function(state)
 	state.bookmarks = nil
 
-	if state.notify.enable then
+	if state.notify and state.notify.enable then
 		ya.notify {
 			title = "Bookmarks",
 			content = state.notify.message.delete_all,
