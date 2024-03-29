@@ -18,7 +18,14 @@ local save_bookmark = ya.sync(function(state, idx)
 	local folder = Folder:by_kind(Folder.CURRENT)
 
 	state.bookmarks = state.bookmarks or {}
-	state.bookmarks[#state.bookmarks + 1] = {
+	state.indexes = state.indexes or {}
+	local _idx = state.indexes[idx]
+	if _idx == nil then
+		_idx = #state.bookmarks + 1
+		state.indexes[idx] = _idx
+	end
+
+	state.bookmarks[_idx] = {
 		on = SUPPORTED_KEYS[idx].on,
 		desc = tostring(folder.cwd),
 		cursor = folder.cursor,
