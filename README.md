@@ -45,9 +45,11 @@ desc = "Delete all bookmarks"
 
 ---
 
-Additionally you can enable notifications via the plugin's `setup` function in `init.lua`, the following are the default configurations:
+Additionally you can enable notifications by calling the plugin's `setup` function in Yazi's `init.lua`, i.e. `~/.config/yazi/init.lua`.
+The following are the default configurations:
 
 ```lua
+-- ~/.config/yazi/init.lua
 require("bookmarks"):setup({
 	notify = {
 		enable = false,
