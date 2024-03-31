@@ -81,6 +81,12 @@ local delete_all_bookmarks = ya.sync(function(state)
 end)
 
 local _save_last_dir = ya.sync(function(state)
+	state.curr_dir = {
+		on = "'",
+		desc = "~", -- FIX This might not be true, i.e. the user entry point might not be the home dir
+		cursor = 0,
+	}
+
 	ps.sub("cd", function()
 		local folder = Folder:by_kind(Folder.CURRENT)
 		state.last_dir = state.curr_dir
@@ -89,6 +95,11 @@ local _save_last_dir = ya.sync(function(state)
 			desc = tostring(folder.cwd),
 			cursor = folder.cursor,
 		}
+	end)
+
+	ps.sub("hover", function()
+		local folder = Folder:by_kind(Folder.CURRENT)
+		state.curr_dir.cursor = folder.cursor
 	end)
 end)
 
