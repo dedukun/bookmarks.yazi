@@ -72,6 +72,16 @@ local delete_all_bookmarks = ya.sync(function(state)
 	end
 end)
 
+local test_sub = ya.sync(function()
+	ya.err("TEST SUB")
+	ps.sub_remote("bookmarks", function(body) ya.err("BOOKMARKS SUB", serialize(body)) end)
+end)
+
+local test_pub = ya.sync(function()
+	ya.err("TEST PUB")
+	ps.pub_static(10, "bookmarks", "TEST PUB")
+end)
+
 return {
 	entry = function(_, args)
 		local action = args[1]
@@ -84,6 +94,7 @@ return {
 			if key then
 				save_bookmark(key)
 			end
+			test_pub()
 			return
 		end
 
@@ -110,6 +121,7 @@ return {
 			return
 		end
 
+		test_sub()
 		state.notify = {
 			enable = false,
 			timeout = 1,
