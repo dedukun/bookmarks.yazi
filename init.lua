@@ -46,8 +46,10 @@ end)
 local all_bookmarks = ya.sync(function(state, append_last_dir)
 	local bookmarks = {}
 
-	for _, value in pairs(state.bookmarks) do
-		table.insert(bookmarks, value)
+	if state.bookmarks then
+		for _, value in pairs(state.bookmarks) do
+			table.insert(bookmarks, value)
+		end
 	end
 
 	if append_last_dir and state.last_dir then
@@ -84,7 +86,7 @@ local delete_all_bookmarks = ya.sync(function(state)
 	end
 end)
 
-local _save_last_dir = ya.sync(function(state)
+local _save_last_directory = ya.sync(function(state)
 	state.curr_dir = {
 		on = "'",
 		desc = "~", -- FIX This might not be true, i.e. the user entry point might not be the home dir
@@ -145,7 +147,9 @@ return {
 			return
 		end
 
-		_save_last_dir()
+		if args.save_last_directory then
+			_save_last_directory()
+		end
 
 		state.notify = {
 			enable = false,
