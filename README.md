@@ -69,7 +69,7 @@ require("bookmarks"):setup({
 When enabled, a new bookmark is automatically created in `''` which allows the user to jump back to
 the last directory.
 
-### Notify
+### `notify`
 
 When enabled, notifications will be shown when the user creates a new bookmark and deletes one or
 all saved bookmarks.
