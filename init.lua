@@ -44,7 +44,11 @@ local save_bookmark = ya.sync(function(state, idx)
 end)
 
 local all_bookmarks = ya.sync(function(state, append_last_dir)
-	bookmarks = state.bookmarks or {}
+	local bookmarks = {}
+
+	for _, value in pairs(state.bookmarks) do
+		table.insert(bookmarks, value)
+	end
 
 	if append_last_dir and state.last_dir then
 		table.insert(bookmarks, state.last_dir)
