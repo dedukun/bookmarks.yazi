@@ -74,7 +74,7 @@ the last directory.
 When enabled, notifications will be shown when the user creates a new bookmark and deletes one or
 all saved bookmarks.
 
-By default the notification as a 1 second timeout that can be changed with `notify.timeout`.
+By default the notification has a 1 second timeout that can be changed with `notify.timeout`.
 
-Furthermore, the you can customize the notification messages with `notify.message`.
-For the `new` and `delete` messages, you can use `<key>` and `<folder>`, which will be replaced by the respective new/deleted bookmark's associated key and folder.
+Furthermore, you can customize the notification messages with `notify.message`.
+For the `new` and `delete` messages, the use `<key>` and `<folder>` keywords can be use, which will be replaced by the respective new/deleted bookmark's associated key and folder.
