@@ -77,4 +77,4 @@ all saved bookmarks.
 By default the notification has a 1 second timeout that can be changed with `notify.timeout`.
 
 Furthermore, you can customize the notification messages with `notify.message`.
-For the `new` and `delete` messages, the use `<key>` and `<folder>` keywords can be use, which will be replaced by the respective new/deleted bookmark's associated key and folder.
+For the `new` and `delete` messages, the `<key>` and `<folder>` keywords can be used, which will be replaced by the respective new/deleted bookmark's associated key and folder.
