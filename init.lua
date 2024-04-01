@@ -89,7 +89,7 @@ end)
 local _save_last_directory = ya.sync(function(state)
 	state.curr_dir = {
 		on = "'",
-		desc = "~", -- FIX This might not be true, i.e. the user entry point might not be the home dir
+		desc = "~",
 		cursor = 0,
 	}
 
@@ -106,7 +106,6 @@ local _save_last_directory = ya.sync(function(state)
 	ps.sub("hover", function()
 		local folder = Folder:by_kind(Folder.CURRENT)
 		state.curr_dir.cursor = folder.cursor
-		state.curr_dir.desc = tostring(folder.cwd) -- FIX Not needed when the we are able to get the CWD in the setup
 	end)
 end)
 
