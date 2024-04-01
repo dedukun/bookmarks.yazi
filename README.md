@@ -45,12 +45,13 @@ desc = "Delete all bookmarks"
 
 ---
 
-Additionally you can enable notifications by calling the plugin's `setup` function in Yazi's `init.lua`, i.e. `~/.config/yazi/init.lua`.
+Additionally there are configurations that can be done using the plugin's `setup` function in Yazi's `init.lua`, i.e. `~/.config/yazi/init.lua`.
 The following are the default configurations:
 
 ```lua
 -- ~/.config/yazi/init.lua
 require("bookmarks"):setup({
+	save_last_directory = false,
 	notify = {
 		enable = false,
 		timeout = 1,
@@ -63,4 +64,17 @@ require("bookmarks"):setup({
 })
 ```
 
-For the `new` and `delete` messages, you can use `<key>` and `<folder>`, which will be replaced by the respective new/deleted bookmark's associated key and folder.
+### `save_last_directory`
+
+When enabled, a new bookmark is automatically created in `''` which allows the user to jump back to
+the last directory.
+
+### `notify`
+
+When enabled, notifications will be shown when the user creates a new bookmark and deletes one or
+all saved bookmarks.
+
+By default the notification has a 1 second timeout that can be changed with `notify.timeout`.
+
+Furthermore, you can customize the notification messages with `notify.message`.
+For the `new` and `delete` messages, the `<key>` and `<folder>` keywords can be used, which will be replaced by the respective new/deleted bookmark's associated key and folder.

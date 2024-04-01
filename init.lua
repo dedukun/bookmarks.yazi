@@ -43,7 +43,21 @@ local save_bookmark = ya.sync(function(state, idx)
 	end
 end)
 
-local all_bookmarks = ya.sync(function(state) return state.bookmarks or {} end)
+local all_bookmarks = ya.sync(function(state, append_last_dir)
+	local bookmarks = {}
+
+	if state.bookmarks then
+		for _, value in pairs(state.bookmarks) do
+			table.insert(bookmarks, value)
+		end
+	end
+
+	if append_last_dir and state.last_dir then
+		table.insert(bookmarks, state.last_dir)
+	end
+
+	return bookmarks
+end)
 
 local delete_bookmark = ya.sync(function(state, idx)
 	if state.notify and state.notify.enable then
@@ -72,6 +86,29 @@ local delete_all_bookmarks = ya.sync(function(state)
 	end
 end)
 
+local _save_last_directory = ya.sync(function(state)
+	state.curr_dir = {
+		on = "'",
+		desc = "~",
+		cursor = 0,
+	}
+
+	ps.sub("cd", function()
+		local folder = Folder:by_kind(Folder.CURRENT)
+		state.last_dir = state.curr_dir
+		state.curr_dir = {
+			on = "'",
+			desc = tostring(folder.cwd),
+			cursor = folder.cursor,
+		}
+	end)
+
+	ps.sub("hover", function()
+		local folder = Folder:by_kind(Folder.CURRENT)
+		state.curr_dir.cursor = folder.cursor
+	end)
+end)
+
 return {
 	entry = function(_, args)
 		local action = args[1]
@@ -91,7 +128,7 @@ return {
 			return delete_all_bookmarks()
 		end
 
-		local bookmarks = all_bookmarks()
+		local bookmarks = all_bookmarks(action == "jump")
 		local selected = #bookmarks > 0 and ya.which { cands = bookmarks }
 		if not selected then
 			return
@@ -108,6 +145,10 @@ return {
 	setup = function(state, args)
 		if not args then
 			return
+		end
+
+		if args.save_last_directory then
+			_save_last_directory()
 		end
 
 		state.notify = {
