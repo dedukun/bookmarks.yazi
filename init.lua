@@ -145,7 +145,14 @@ local delete_bookmark = ya.sync(function(state, idx)
 		_send_notification(message)
 	end
 
-	table.remove(state.bookmarks, idx)
+	state.bookmarks[idx] = nil
+	-- remove the indexes entry for the bookmark
+	for key, value in pairs(state.indexes) do
+		if value == idx then
+			state.indexes[key] = nil
+			break
+		end
+	end
 
 	if state.persist then
 		_save_state(state.bookmarks, state.indexes)
@@ -154,9 +161,10 @@ end)
 
 local delete_all_bookmarks = ya.sync(function(state)
 	state.bookmarks = nil
+	state.indexes = nil
 
 	if state.persist then
-		_save_state(nil)
+		_save_state(nil, nil)
 	end
 
 	if state.notify and state.notify.enable then
