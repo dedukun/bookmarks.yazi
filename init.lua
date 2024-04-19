@@ -14,6 +14,37 @@ local SUPPORTED_KEYS = {
 	{ on = "u"}, { on = "v"}, { on = "w"}, { on = "x"}, { on = "y"}, { on = "z"},
 }
 
+local _send_notification = ya.sync(
+	function(state, message)
+		ya.notify {
+			title = "Bookmarks",
+			content = message,
+			timeout = state.notify.timeout,
+		}
+	end
+)
+
+local _save_last_directory = ya.sync(function(state)
+	ps.sub("cd", function()
+		local folder = Folder:by_kind(Folder.CURRENT)
+		state.last_dir = state.curr_dir
+		state.curr_dir = {
+			on = "'",
+			desc = tostring(folder.cwd),
+			cursor = folder.cursor,
+		}
+	end)
+
+	ps.sub("hover", function()
+		local folder = Folder:by_kind(Folder.CURRENT)
+		state.curr_dir.cursor = folder.cursor
+	end)
+end)
+
+-- ***********************************************
+-- **============= C O M M A N D S =============**
+-- ***********************************************/
+
 local save_bookmark = ya.sync(function(state, idx)
 	local folder = Folder:by_kind(Folder.CURRENT)
 
@@ -35,11 +66,7 @@ local save_bookmark = ya.sync(function(state, idx)
 		local message = state.notify.message.new
 		message, _ = message:gsub("<key>", SUPPORTED_KEYS[idx].on)
 		message, _ = message:gsub("<folder>", tostring(folder.cwd))
-		ya.notify {
-			title = "Bookmarks",
-			content = message,
-			timeout = state.notify.timeout,
-		}
+		_send_notification(message)
 	end
 end)
 
@@ -64,11 +91,7 @@ local delete_bookmark = ya.sync(function(state, idx)
 		local message = state.notify.message.delete
 		message, _ = message:gsub("<key>", state.bookmarks[idx].on)
 		message, _ = message:gsub("<folder>", state.bookmarks[idx].desc)
-		ya.notify {
-			title = "Bookmarks",
-			content = message,
-			timeout = state.notify.timeout,
-		}
+		_send_notification(message)
 	end
 
 	table.remove(state.bookmarks, idx)
@@ -78,35 +101,8 @@ local delete_all_bookmarks = ya.sync(function(state)
 	state.bookmarks = nil
 
 	if state.notify and state.notify.enable then
-		ya.notify {
-			title = "Bookmarks",
-			content = state.notify.message.delete_all,
-			timeout = state.notify.timeout,
-		}
+		_send_notification(state.notify.message.delete_all)
 	end
-end)
-
-local _save_last_directory = ya.sync(function(state)
-	state.curr_dir = {
-		on = "'",
-		desc = "~",
-		cursor = 0,
-	}
-
-	ps.sub("cd", function()
-		local folder = Folder:by_kind(Folder.CURRENT)
-		state.last_dir = state.curr_dir
-		state.curr_dir = {
-			on = "'",
-			desc = tostring(folder.cwd),
-			cursor = folder.cursor,
-		}
-	end)
-
-	ps.sub("hover", function()
-		local folder = Folder:by_kind(Folder.CURRENT)
-		state.curr_dir.cursor = folder.cursor
-	end)
 end)
 
 return {
