@@ -202,8 +202,8 @@ return {
 
 		if action == "jump" then
 			ya.manager_emit("cd", { bookmarks[selected].desc })
-			ya.manager_emit("arrow", { -99999999 })
-			ya.manager_emit("arrow", { bookmarks[selected].cursor })
+			ya.manager_emit("arrow", { tostring(-99999999) })
+			ya.manager_emit("arrow", { tostring(bookmarks[selected].cursor) })
 		elseif action == "delete" then
 			delete_bookmark(selected)
 		end
