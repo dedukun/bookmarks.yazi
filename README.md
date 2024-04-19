@@ -52,6 +52,7 @@ The following are the default configurations:
 -- ~/.config/yazi/init.lua
 require("bookmarks"):setup({
 	save_last_directory = false,
+	persist = false,
 	notify = {
 		enable = false,
 		timeout = 1,
