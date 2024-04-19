@@ -24,7 +24,7 @@ local _send_notification = ya.sync(
 	end
 )
 
-local _persist_bookmarks = ya.sync(function(state)
+local _load_bookmarks = ya.sync(function(state)
 	ya.err("Persist Bookmarks")
 	ps.sub_remote("bookmarks", function(body)
 		if not state.bookmarks and body then
@@ -197,7 +197,7 @@ return {
 
 		if args.persist == "all" or args.persist == "vim" then
 			state.persist = args.persist
-			_persist_bookmarks()
+			_load_bookmarks()
 		end
 
 		state.notify = {
