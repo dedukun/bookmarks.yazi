@@ -24,40 +24,48 @@ local _send_notification = ya.sync(
 	end
 )
 
-local _load_bookmarks = ya.sync(function(state)
-	ya.err("Persist Bookmarks")
+local _load_state = ya.sync(function(state)
+	ya.err("Persist State")
 	ps.sub_remote("bookmarks", function(body)
 		if not state.bookmarks and body then
+			state.indexes = {}
 			state.bookmarks = {}
-
-			for _, value in pairs(body) do
-				table.insert(state.bookmarks, value)
+			for key, value in pairs(body.indexes) do
+				state.indexes[tonumber(key)] = value
+			end
+			for key, value in pairs(body.bookmarks) do
+				state.bookmarks[tonumber(key)] = value
 			end
 		end
 	end)
 end)
 
-local _save_bookmark = ya.sync(function(state, bookmarks)
-	ya.err("Save Bookmark")
+local _save_state = ya.sync(function(state, bookmarks, indexes)
+	ya.err("Save State")
 	if not bookmarks then
 		ps.pub_static(10, "bookmarks", nil)
 		return
 	end
 
+	local save_state = {}
 	if state.persist == "all" then
-		ps.pub_static(10, "bookmarks", bookmarks)
-		return
+		save_state = { bookmarks = bookmarks, indexes = indexes }
+	else -- VIM mode
+		local save_bookmarks = {}
+		local save_indexes = {}
+		for key, value in pairs(bookmarks) do
+			-- Only save bookmarks in upper case keys
+			if string.match(value.on, "%u") then
+				table.insert(save_bookmarks, value)
+				table.insert(save_indexes, indexes[key])
+			end
+		end
+
+		save_state = { bookmarks = save_bookmarks, indexes = save_indexes }
 	end
 
-	-- VIM mode
-	local save_bookmarks = {}
-	for _, value in pairs(bookmarks) do
-		-- Only save bookmarks in upper case keys
-		if string.match(value.on, "%u") then
-			table.insert(save_bookmarks, value)
-		end
-	end
-	ps.pub_static(10, "bookmarks", save_bookmarks)
+	ya.err("SAVE STATE: " .. serialize(save_state))
+	ps.pub_static(10, "bookmarks", save_state)
 end)
 
 local _save_last_directory = ya.sync(function(state)
@@ -98,8 +106,11 @@ local save_bookmark = ya.sync(function(state, idx)
 		cursor = folder.cursor,
 	}
 
+	ya.err("INDEXES " .. serialize(state.indexes))
+	ya.err("BOOKMARKS " .. serialize(state.bookmarks))
+
 	if state.persist then
-		_save_bookmark(state.bookmarks)
+		_save_state(state.bookmarks, state.indexes)
 	end
 
 	if state.notify and state.notify.enable then
@@ -137,7 +148,7 @@ local delete_bookmark = ya.sync(function(state, idx)
 	table.remove(state.bookmarks, idx)
 
 	if state.persist then
-		_save_bookmark(state.bookmarks)
+		_save_state(state.bookmarks, state.indexes)
 	end
 end)
 
@@ -145,7 +156,7 @@ local delete_all_bookmarks = ya.sync(function(state)
 	state.bookmarks = nil
 
 	if state.persist then
-		_save_bookmark(nil)
+		_save_state(nil)
 	end
 
 	if state.notify and state.notify.enable then
@@ -197,7 +208,7 @@ return {
 
 		if args.persist == "all" or args.persist == "vim" then
 			state.persist = args.persist
-			_load_bookmarks()
+			_load_state()
 		end
 
 		state.notify = {
