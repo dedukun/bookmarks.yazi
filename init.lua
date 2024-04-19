@@ -24,6 +24,24 @@ local _send_notification = ya.sync(
 	end
 )
 
+local _persist_bookmarks = ya.sync(function(state)
+	ya.err("Persist Bookmarks")
+	ps.sub_remote("bookmarks", function(body)
+		if not state.bookmarks and body then
+			state.bookmarks = {}
+
+			for _, value in pairs(body) do
+				table.insert(state.bookmarks, value)
+			end
+		end
+	end)
+end)
+
+local _save_bookmark = ya.sync(function(_, bookmarks)
+	ya.err("Save Bookmark")
+	ps.pub_static(10, "bookmarks", bookmarks)
+end)
+
 local _save_last_directory = ya.sync(function(state)
 	ps.sub("cd", function()
 		local folder = Folder:by_kind(Folder.CURRENT)
@@ -62,6 +80,10 @@ local save_bookmark = ya.sync(function(state, idx)
 		cursor = folder.cursor,
 	}
 
+	if state.persist then
+		_save_bookmark(state.bookmarks)
+	end
+
 	if state.notify and state.notify.enable then
 		local message = state.notify.message.new
 		message, _ = message:gsub("<key>", SUPPORTED_KEYS[idx].on)
@@ -95,10 +117,18 @@ local delete_bookmark = ya.sync(function(state, idx)
 	end
 
 	table.remove(state.bookmarks, idx)
+
+	if state.persist then
+		_save_bookmark(state.bookmarks)
+	end
 end)
 
 local delete_all_bookmarks = ya.sync(function(state)
 	state.bookmarks = nil
+
+	if state.persist then
+		_save_bookmark(nil)
+	end
 
 	if state.notify and state.notify.enable then
 		_send_notification(state.notify.message.delete_all)
@@ -145,6 +175,11 @@ return {
 
 		if args.save_last_directory then
 			_save_last_directory()
+		end
+
+		if args.persist then
+			state.persist = true
+			_persist_bookmarks()
 		end
 
 		state.notify = {

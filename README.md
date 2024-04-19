@@ -69,6 +69,11 @@ require("bookmarks"):setup({
 When enabled, a new bookmark is automatically created in `''` which allows the user to jump back to
 the last directory.
 
+### `persist`
+
+When enabled the bookmarks will persist, i.e. if you close and reopen Yazi they will still be
+present.
+
 ### `notify`
 
 When enabled, notifications will be shown when the user creates a new bookmark and deletes one or
