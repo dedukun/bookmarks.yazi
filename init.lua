@@ -24,8 +24,17 @@ local _send_notification = ya.sync(
 	end
 )
 
+local _get_real_index = ya.sync(function(state, idx)
+	for key, value in pairs(state.indexes) do
+		if value == idx then
+			return key
+		end
+	end
+
+	return nil
+end)
+
 local _load_state = ya.sync(function(state)
-	ya.err("Persist State")
 	ps.sub_remote("bookmarks", function(body)
 		if not state.bookmarks and body then
 			state.indexes = {}
@@ -41,7 +50,6 @@ local _load_state = ya.sync(function(state)
 end)
 
 local _save_state = ya.sync(function(state, bookmarks, indexes)
-	ya.err("Save State")
 	if not bookmarks then
 		ps.pub_static(10, "bookmarks", nil)
 		return
@@ -56,15 +64,15 @@ local _save_state = ya.sync(function(state, bookmarks, indexes)
 		for key, value in pairs(bookmarks) do
 			-- Only save bookmarks in upper case keys
 			if string.match(value.on, "%u") then
-				table.insert(save_bookmarks, value)
-				table.insert(save_indexes, indexes[key])
+				save_bookmarks[key] = value
+				local real_index = _get_real_index(key)
+				save_indexes[real_index] = indexes[real_index]
 			end
 		end
 
 		save_state = { bookmarks = save_bookmarks, indexes = save_indexes }
 	end
 
-	ya.err("SAVE STATE: " .. serialize(save_state))
 	ps.pub_static(10, "bookmarks", save_state)
 end)
 
@@ -106,9 +114,6 @@ local save_bookmark = ya.sync(function(state, idx)
 		cursor = folder.cursor,
 	}
 
-	ya.err("INDEXES " .. serialize(state.indexes))
-	ya.err("BOOKMARKS " .. serialize(state.bookmarks))
-
 	if state.persist then
 		_save_state(state.bookmarks, state.indexes)
 	end
@@ -147,11 +152,9 @@ local delete_bookmark = ya.sync(function(state, idx)
 
 	state.bookmarks[idx] = nil
 	-- remove the indexes entry for the bookmark
-	for key, value in pairs(state.indexes) do
-		if value == idx then
-			state.indexes[key] = nil
-			break
-		end
+	local real_index = _get_real_index(idx)
+	if real_index then
+		state.indexes[real_index] = nil
 	end
 
 	if state.persist then
