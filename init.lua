@@ -37,9 +37,27 @@ local _persist_bookmarks = ya.sync(function(state)
 	end)
 end)
 
-local _save_bookmark = ya.sync(function(_, bookmarks)
+local _save_bookmark = ya.sync(function(state, bookmarks)
 	ya.err("Save Bookmark")
-	ps.pub_static(10, "bookmarks", bookmarks)
+	if not bookmarks then
+		ps.pub_static(10, "bookmarks", nil)
+		return
+	end
+
+	if state.persist == "all" then
+		ps.pub_static(10, "bookmarks", bookmarks)
+		return
+	end
+
+	-- VIM mode
+	local save_bookmarks = {}
+	for _, value in pairs(bookmarks) do
+		-- Only save bookmarks in upper case keys
+		if string.match(value.on, "%u") then
+			table.insert(save_bookmarks, value)
+		end
+	end
+	ps.pub_static(10, "bookmarks", save_bookmarks)
 end)
 
 local _save_last_directory = ya.sync(function(state)
@@ -177,8 +195,8 @@ return {
 			_save_last_directory()
 		end
 
-		if args.persist then
-			state.persist = true
+		if args.persist == "all" or args.persist == "vim" then
+			state.persist = args.persist
 			_persist_bookmarks()
 		end
 
