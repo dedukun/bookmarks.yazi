@@ -61,12 +61,14 @@ local _save_state = ya.sync(function(state, bookmarks, indexes)
 	else -- VIM mode
 		local save_bookmarks = {}
 		local save_indexes = {}
+		local idx = 1
 		for key, value in pairs(bookmarks) do
 			-- Only save bookmarks in upper case keys
 			if string.match(value.on, "%u") then
-				save_bookmarks[key] = value
+				save_bookmarks[idx] = value
 				local real_index = _get_real_index(key)
-				save_indexes[real_index] = indexes[real_index]
+				save_indexes[real_index] = idx
+				idx = idx + 1
 			end
 		end
 
@@ -150,11 +152,11 @@ local delete_bookmark = ya.sync(function(state, idx)
 		_send_notification(message)
 	end
 
-	state.bookmarks[idx] = nil
+	table.remove(state.bookmarks, idx)
 	-- remove the indexes entry for the bookmark
 	local real_index = _get_real_index(idx)
 	if real_index then
-		state.indexes[real_index] = nil
+		table.remove(state.indexes, real_index)
 	end
 
 	if state.persist then
