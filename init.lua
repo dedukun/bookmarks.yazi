@@ -24,20 +24,71 @@ local _send_notification = ya.sync(
 	end
 )
 
+local _get_real_index = ya.sync(function(state, idx)
+	for key, value in pairs(state.bookmarks) do
+		if value.on == SUPPORTED_KEYS[idx].on then
+			return key
+		end
+	end
+	return nil
+end)
+
+local _get_hovered_file = ya.sync(function()
+	local folder = Folder:by_kind(Folder.CURRENT)
+	local file_hovered = folder.window[folder.cursor - folder.offset + 1]
+	if not file_hovered then
+		return folder.cwd
+	end
+	return file_hovered.url
+end)
+
+local _load_state = ya.sync(function(state)
+	ps.sub_remote("bookmarks", function(body)
+		if not state.bookmarks and body then
+			state.bookmarks = {}
+			for _, value in pairs(body) do
+				table.insert(state.bookmarks, value)
+			end
+		end
+	end)
+end)
+
+local _save_state = ya.sync(function(state, bookmarks)
+	if not bookmarks then
+		ps.pub_static(10, "bookmarks", nil)
+		return
+	end
+
+	local save_state = {}
+	if state.persist == "all" then
+		save_state = bookmarks
+	else -- VIM mode
+		local idx = 1
+		for _, value in pairs(bookmarks) do
+			-- Only save bookmarks in upper case keys
+			if string.match(value.on, "%u") then
+				save_state[idx] = value
+				idx = idx + 1
+			end
+		end
+	end
+
+	ps.pub_static(10, "bookmarks", save_state)
+end)
+
 local _save_last_directory = ya.sync(function(state)
 	ps.sub("cd", function()
-		local folder = Folder:by_kind(Folder.CURRENT)
+		local file_url = _get_hovered_file()
 		state.last_dir = state.curr_dir
 		state.curr_dir = {
 			on = "'",
-			desc = tostring(folder.cwd),
-			cursor = folder.cursor,
+			desc = tostring(file_url),
 		}
 	end)
 
 	ps.sub("hover", function()
-		local folder = Folder:by_kind(Folder.CURRENT)
-		state.curr_dir.cursor = folder.cursor
+		local file_url = _get_hovered_file()
+		state.curr_dir.desc = tostring(file_url)
 	end)
 end)
 
@@ -46,26 +97,28 @@ end)
 -- ***********************************************/
 
 local save_bookmark = ya.sync(function(state, idx)
-	local folder = Folder:by_kind(Folder.CURRENT)
+	local file_url = _get_hovered_file()
 
 	state.bookmarks = state.bookmarks or {}
-	state.indexes = state.indexes or {}
-	local _idx = state.indexes[idx]
-	if _idx == nil then
+
+	local _idx = _get_real_index(idx)
+	if not _idx then
 		_idx = #state.bookmarks + 1
-		state.indexes[idx] = _idx
 	end
 
 	state.bookmarks[_idx] = {
 		on = SUPPORTED_KEYS[idx].on,
-		desc = tostring(folder.cwd),
-		cursor = folder.cursor,
+		desc = tostring(file_url),
 	}
+
+	if state.persist then
+		_save_state(state.bookmarks)
+	end
 
 	if state.notify and state.notify.enable then
 		local message = state.notify.message.new
-		message, _ = message:gsub("<key>", SUPPORTED_KEYS[idx].on)
-		message, _ = message:gsub("<folder>", tostring(folder.cwd))
+		message, _ = message:gsub("<key>", state.bookmarks[_idx].on)
+		message, _ = message:gsub("<folder>", state.bookmarks[_idx].desc)
 		_send_notification(message)
 	end
 end)
@@ -95,10 +148,18 @@ local delete_bookmark = ya.sync(function(state, idx)
 	end
 
 	table.remove(state.bookmarks, idx)
+
+	if state.persist then
+		_save_state(state.bookmarks)
+	end
 end)
 
 local delete_all_bookmarks = ya.sync(function(state)
 	state.bookmarks = nil
+
+	if state.persist then
+		_save_state(nil)
+	end
 
 	if state.notify and state.notify.enable then
 		_send_notification(state.notify.message.delete_all)
@@ -131,9 +192,7 @@ return {
 		end
 
 		if action == "jump" then
-			ya.manager_emit("cd", { bookmarks[selected].desc })
-			ya.manager_emit("arrow", { -99999999 })
-			ya.manager_emit("arrow", { bookmarks[selected].cursor })
+			ya.manager_emit("reveal", { bookmarks[selected].desc })
 		elseif action == "delete" then
 			delete_bookmark(selected)
 		end
@@ -145,6 +204,11 @@ return {
 
 		if args.save_last_directory then
 			_save_last_directory()
+		end
+
+		if args.persist == "all" or args.persist == "vim" then
+			state.persist = args.persist
+			_load_state()
 		end
 
 		state.notify = {
