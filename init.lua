@@ -33,9 +33,13 @@ local _get_real_index = ya.sync(function(state, idx)
 	return nil
 end)
 
-local _get_hovered_file = ya.sync(function ()
+local _get_hovered_file = ya.sync(function()
 	local folder = Folder:by_kind(Folder.CURRENT)
-	return folder.window[folder.cursor - folder.offset + 1].url
+	local file_hovered = folder.window[folder.cursor - folder.offset + 1]
+	if not file_hovered then
+		return folder.cwd
+	end
+	return file_hovered.url
 end)
 
 local _load_state = ya.sync(function(state)
