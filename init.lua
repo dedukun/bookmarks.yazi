@@ -33,6 +33,11 @@ local _get_real_index = ya.sync(function(state, idx)
 	return nil
 end)
 
+local _get_hovered_file = ya.sync(function ()
+	local folder = Folder:by_kind(Folder.CURRENT)
+	return folder.window[folder.cursor - folder.offset + 1].url
+end)
+
 local _load_state = ya.sync(function(state)
 	ps.sub_remote("bookmarks", function(body)
 		if not state.bookmarks and body then
@@ -69,18 +74,17 @@ end)
 
 local _save_last_directory = ya.sync(function(state)
 	ps.sub("cd", function()
-		local folder = Folder:by_kind(Folder.CURRENT)
+		local file_url = _get_hovered_file()
 		state.last_dir = state.curr_dir
 		state.curr_dir = {
 			on = "'",
-			desc = tostring(folder.cwd),
-			cursor = folder.cursor,
+			desc = tostring(file_url),
 		}
 	end)
 
 	ps.sub("hover", function()
-		local folder = Folder:by_kind(Folder.CURRENT)
-		state.curr_dir.cursor = folder.cursor
+		local file_url = _get_hovered_file()
+		state.curr_dir.desc = tostring(file_url)
 	end)
 end)
 
@@ -89,7 +93,7 @@ end)
 -- ***********************************************/
 
 local save_bookmark = ya.sync(function(state, idx)
-	local folder = Folder:by_kind(Folder.CURRENT)
+	local file_url = _get_hovered_file()
 
 	state.bookmarks = state.bookmarks or {}
 
@@ -100,8 +104,7 @@ local save_bookmark = ya.sync(function(state, idx)
 
 	state.bookmarks[_idx] = {
 		on = SUPPORTED_KEYS[idx].on,
-		desc = tostring(folder.cwd),
-		cursor = folder.cursor,
+		desc = tostring(file_url),
 	}
 
 	if state.persist then
@@ -110,8 +113,8 @@ local save_bookmark = ya.sync(function(state, idx)
 
 	if state.notify and state.notify.enable then
 		local message = state.notify.message.new
-		message, _ = message:gsub("<key>", SUPPORTED_KEYS[idx].on)
-		message, _ = message:gsub("<folder>", tostring(folder.cwd))
+		message, _ = message:gsub("<key>", state.bookmarks[_idx].on)
+		message, _ = message:gsub("<folder>", state.bookmarks[_idx].desc)
 		_send_notification(message)
 	end
 end)
@@ -185,9 +188,7 @@ return {
 		end
 
 		if action == "jump" then
-			ya.manager_emit("cd", { bookmarks[selected].desc })
-			ya.manager_emit("arrow", { -99999999 })
-			ya.manager_emit("arrow", { bookmarks[selected].cursor })
+			ya.manager_emit("reveal", { bookmarks[selected].desc })
 		elseif action == "delete" then
 			delete_bookmark(selected)
 		end
