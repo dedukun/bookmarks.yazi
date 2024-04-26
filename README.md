@@ -7,6 +7,13 @@ A [Yazi](https://github.com/sxyazi/yazi) plugin that adds the basic functionalit
 
 https://github.com/dedukun/bookmarks.yazi/assets/25795432/9a9fe345-dd06-442e-99f1-8475ab22fad5
 
+## Features
+
+ - Create/delete bookmarks
+ - Custom Notifications
+ - `''` to go back to the previous folder
+ - Bookmarks persistence
+
 ## Installation
 
 ```sh
@@ -67,7 +74,7 @@ require("bookmarks"):setup({
 
 ### `save_last_directory`
 
-When enabled, a new bookmark is automatically created in `''` which allows the user to jump back to
+When enabled, a new bookmark is automatically created in `'` which allows the user to jump back to
 the last directory.
 
 ### `persist`
