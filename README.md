@@ -3,7 +3,7 @@
 A [Yazi](https://github.com/sxyazi/yazi) plugin that adds the basic functionality of [vi-like marks](https://neovim.io/doc/user/motion.html#mark-motions).
 
 > [!NOTE]
-> The latest main branch of Yazi is required at the moment.
+> Version 0.2.5+ or the latest main branch of Yazi is required.
 
 https://github.com/dedukun/bookmarks.yazi/assets/25795432/9a9fe345-dd06-442e-99f1-8475ab22fad5
 
