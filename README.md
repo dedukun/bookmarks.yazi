@@ -10,10 +10,10 @@ https://github.com/dedukun/bookmarks.yazi/assets/25795432/9a9fe345-dd06-442e-99f
 
 ## Features
 
- - Create/delete bookmarks
- - Custom Notifications
- - `''` to go back to the previous folder
- - Bookmarks persistence
+- Create/delete bookmarks
+- Custom Notifications
+- `''` to go back to the previous folder
+- Bookmarks persistence
 
 ## Installation
 
@@ -86,10 +86,10 @@ present.
 
 There are three possible values for this option:
 
-| Value  | Description                                                                                                            |
-| ------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `none` | The default value, i.e., no persistance                                                                                |
-| `all`  | All the bookmarks are saved in persistent memory                                                                       |
+| Value  | Description                                                                                                          |
+| ------ | -------------------------------------------------------------------------------------------------------------------- |
+| `none` | The default value, i.e., no persistance                                                                              |
+| `all`  | All the bookmarks are saved in persistent memory                                                                     |
 | `vim`  | This mode emulates the vim global marks, i.e., only the bookmarks in upper case (A-Z) are saved to persistent memory |
 
 ### `desc_format`
@@ -98,10 +98,10 @@ The format for the bookmark description.
 
 There are two possible values for this option:
 
-| Value    | Description                                                                                                          |
-| -------- | -------------------------------------------------------------------------------------------------------------------- |
-| `full`   | The default, it shows the full path of the bookmark, i.e., the parent folder + the hovered file                      |
-| `parent` | Only shows the parent folder of the bookmark                                                                         |
+| Value    | Description                                                                                     |
+| -------- | ----------------------------------------------------------------------------------------------- |
+| `full`   | The default, it shows the full path of the bookmark, i.e., the parent folder + the hovered file |
+| `parent` | Only shows the parent folder of the bookmark                                                    |
 
 ### `notify`
 
