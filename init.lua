@@ -35,11 +35,23 @@ end)
 
 local _get_hovered_file = ya.sync(function()
 	local folder = Folder:by_kind(Folder.CURRENT)
-	local file_hovered = folder.window[folder.cursor - folder.offset + 1]
-	if not file_hovered then
-		return folder.cwd
+	if not folder.hovered then
+		return { url = folder.cwd, is_cwd = true }
 	end
-	return file_hovered.url
+	return { url = folder.hovered.url, is_cwd = false }
+end)
+
+local _generate_description = ya.sync(function(state, file)
+	-- if this is true, we don't have information about the folder, so just return the folder url
+	if file.is_cwd then
+		return tostring(file.url)
+	end
+
+	if state.desc_format == "parent" then
+		return tostring(file.url:parent())
+	end
+	-- full description
+	return tostring(file.url)
 end)
 
 local _load_state = ya.sync(function(state)
@@ -78,17 +90,19 @@ end)
 
 local _save_last_directory = ya.sync(function(state)
 	ps.sub("cd", function()
-		local file_url = _get_hovered_file()
+		local file = _get_hovered_file()
 		state.last_dir = state.curr_dir
 		state.curr_dir = {
 			on = "'",
-			desc = tostring(file_url),
+			desc = _generate_description(file),
+			path = tostring(file.url),
 		}
 	end)
 
 	ps.sub("hover", function()
-		local file_url = _get_hovered_file()
-		state.curr_dir.desc = tostring(file_url)
+		local file = _get_hovered_file()
+		state.curr_dir.desc = _generate_description(file)
+		state.curr_dir.path = tostring(file.url)
 	end)
 end)
 
@@ -97,7 +111,7 @@ end)
 -- ***********************************************/
 
 local save_bookmark = ya.sync(function(state, idx)
-	local file_url = _get_hovered_file()
+	local file = _get_hovered_file()
 
 	state.bookmarks = state.bookmarks or {}
 
@@ -108,7 +122,8 @@ local save_bookmark = ya.sync(function(state, idx)
 
 	state.bookmarks[_idx] = {
 		on = SUPPORTED_KEYS[idx].on,
-		desc = tostring(file_url),
+		desc = _generate_description(file),
+		path = tostring(file.url),
 	}
 
 	if state.persist then
@@ -192,7 +207,7 @@ return {
 		end
 
 		if action == "jump" then
-			ya.manager_emit("reveal", { bookmarks[selected].desc })
+			ya.manager_emit("reveal", { bookmarks[selected].path })
 		elseif action == "delete" then
 			delete_bookmark(selected)
 		end
@@ -209,6 +224,12 @@ return {
 		if args.persist == "all" or args.persist == "vim" then
 			state.persist = args.persist
 			_load_state()
+		end
+
+		if args.desc_format == "parent" then
+			state.desc_format = "parent"
+		else
+			state.desc_format = "full"
 		end
 
 		state.notify = {
