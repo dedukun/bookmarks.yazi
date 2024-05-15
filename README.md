@@ -18,7 +18,7 @@ https://github.com/dedukun/bookmarks.yazi/assets/25795432/9a9fe345-dd06-442e-99f
 ## Installation
 
 <details>
-<summary>v0.2.5 (manual installation)</summary>
+<summary>Yazi v0.2.5 (manual installation)</summary>
 	
 ```sh
 # Linux/macOS
@@ -32,7 +32,7 @@ git clone https://github.com/dedukun/bookmarks.yazi.git %AppData%\yazi\config\pl
 
 
 <details>
-<summary>Latest commit in Yazi (Package Manager)</summary>
+<summary>Latest commit in Yazi (package manager)</summary>
 
 ```sh
 # Add the plugin
