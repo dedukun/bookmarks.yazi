@@ -17,6 +17,9 @@ https://github.com/dedukun/bookmarks.yazi/assets/25795432/9a9fe345-dd06-442e-99f
 
 ## Installation
 
+<details>
+<summary>v0.2.5 (manual installation)</summary>
+	
 ```sh
 # Linux/macOS
 git clone https://github.com/dedukun/bookmarks.yazi.git ~/.config/yazi/plugins/bookmarks.yazi
@@ -24,6 +27,25 @@ git clone https://github.com/dedukun/bookmarks.yazi.git ~/.config/yazi/plugins/b
 # Windows
 git clone https://github.com/dedukun/bookmarks.yazi.git %AppData%\yazi\config\plugins\bookmarks.yazi
 ```
+
+</details>
+
+
+<details>
+<summary>Latest commit in Yazi (Package Manager)</summary>
+
+```sh
+# Add the plugin
+ya pack -a dedukun/bookmarks
+
+# Install plugin
+ya pack -i
+
+# Update plugin
+ya pack -u
+```
+
+</details>
 
 ## Configuration
 
