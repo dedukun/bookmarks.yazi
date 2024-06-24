@@ -55,7 +55,7 @@ local _generate_description = ya.sync(function(state, file)
 end)
 
 local _load_state = ya.sync(function(state)
-	ps.sub_remote("bookmarks", function(body)
+	ps.sub_remote("@bookmarks", function(body)
 		if not state.bookmarks and body then
 			state.bookmarks = {}
 			for _, value in pairs(body) do
@@ -67,7 +67,7 @@ end)
 
 local _save_state = ya.sync(function(state, bookmarks)
 	if not bookmarks then
-		ps.pub_static(10, "bookmarks", nil)
+		ps.pub_to(0, "@bookmarks", nil)
 		return
 	end
 
@@ -85,7 +85,7 @@ local _save_state = ya.sync(function(state, bookmarks)
 		end
 	end
 
-	ps.pub_static(10, "bookmarks", save_state)
+	ps.pub_to(0, "@bookmarks", save_state)
 end)
 
 local _save_last_directory = ya.sync(function(state)
