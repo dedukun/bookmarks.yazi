@@ -34,7 +34,7 @@ local _get_real_index = ya.sync(function(state, idx)
 end)
 
 local _get_hovered_file = ya.sync(function()
-	local folder = Folder:by_kind(Folder.CURRENT)
+	local folder = cx.active.current
 	if not folder.hovered then
 		return { url = folder.cwd, is_cwd = true }
 	end
