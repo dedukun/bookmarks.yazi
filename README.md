@@ -102,7 +102,7 @@ require("bookmarks"):setup({
 When enabled, a new bookmark is automatically created in `'` which allows the user to jump back to
 the last directory.
 
-This option is deprecated and will be removed in the future in favor of `last_directory`.
+***NOTE:*** This option is **DEPRECATED** and will be removed in the future in favor of `last_directory`.
 
 ### `last_directory`
 
