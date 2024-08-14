@@ -81,7 +81,7 @@ The following are the default configurations:
 ```lua
 -- ~/.config/yazi/init.lua
 require("bookmarks"):setup({
-	save_last_directory = false, -- DEPRECATED - will be removed in the future
+	save_last_directory = false, -- DEPRECATED - will be removed in the future. Use `last_directory`
 	last_directory = { enable = false, persist = false },
 	persist = "none",
 	desc_format = "full",
