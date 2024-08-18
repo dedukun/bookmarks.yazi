@@ -88,10 +88,19 @@ local _save_state = ya.sync(function(state, bookmarks)
 	ps.pub_to(0, "@bookmarks", save_state)
 end)
 
-local _save_last_directory = ya.sync(function(state)
+local _save_last_directory = ya.sync(function(state, persist)
+	if persist then
+		ps.sub_remote("@bookmarks-lastdir", function(body) state.curr_dir = body end)
+	end
+
 	ps.sub("cd", function()
 		local file = _get_hovered_file()
 		state.last_dir = state.curr_dir
+
+		if persist and state.last_dir then
+			ps.pub_to(0, "@bookmarks-lastdir", state.last_dir)
+		end
+
 		state.curr_dir = {
 			on = "'",
 			desc = _generate_description(file),
@@ -217,8 +226,13 @@ return {
 			return
 		end
 
+		-- TODO: DEPRECATED
 		if args.save_last_directory then
 			_save_last_directory()
+		elseif type(args.last_directory) == "table" then
+			if args.last_directory.enable then
+				_save_last_directory(args.last_directory.persist)
+			end
 		end
 
 		if args.persist == "all" or args.persist == "vim" then
