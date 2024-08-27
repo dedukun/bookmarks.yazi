@@ -33,9 +33,10 @@ local _get_real_index = ya.sync(function(state, idx)
 	return nil
 end)
 
-local _get_hovered_file = ya.sync(function()
+local _get_bookmark_file = ya.sync(function(state)
 	local folder = cx.active.current
-	if not folder.hovered then
+
+	if state.bookmark_file_pick_mode == "current" or not folder.hovered then
 		return { url = folder.cwd, is_cwd = true }
 	end
 	return { url = folder.hovered.url, is_cwd = false }
@@ -94,7 +95,7 @@ local _save_last_directory = ya.sync(function(state, persist)
 	end
 
 	ps.sub("cd", function()
-		local file = _get_hovered_file()
+		local file = _get_bookmark_file()
 		state.last_dir = state.curr_dir
 
 		if persist and state.last_dir then
@@ -109,7 +110,7 @@ local _save_last_directory = ya.sync(function(state, persist)
 	end)
 
 	ps.sub("hover", function()
-		local file = _get_hovered_file()
+		local file = _get_bookmark_file()
 		state.curr_dir.desc = _generate_description(file)
 		state.curr_dir.path = tostring(file.url)
 	end)
@@ -120,7 +121,7 @@ end)
 -- ***********************************************
 
 local save_bookmark = ya.sync(function(state, idx)
-	local file = _get_hovered_file()
+	local file = _get_bookmark_file()
 
 	state.bookmarks = state.bookmarks or {}
 
@@ -244,6 +245,12 @@ return {
 			state.desc_format = "parent"
 		else
 			state.desc_format = "full"
+		end
+
+		if args.bookmark_file_pick_mode == "current" then
+			state.bookmark_file_pick_mode = "current"
+		else
+			state.bookmark_file_pick_mode = "hover"
 		end
 
 		state.notify = {
