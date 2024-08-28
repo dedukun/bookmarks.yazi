@@ -36,7 +36,7 @@ end)
 local _get_bookmark_file = ya.sync(function(state)
 	local folder = cx.active.current
 
-	if state.bookmark_file_pick_mode == "parent" or not folder.hovered then
+	if state.file_pick_mode == "parent" or not folder.hovered then
 		return { url = folder.cwd, is_cwd = true }
 	end
 	return { url = folder.hovered.url, is_cwd = false }
@@ -247,10 +247,10 @@ return {
 			state.desc_format = "full"
 		end
 
-		if args.bookmark_file_pick_mode == "parent" then
-			state.bookmark_file_pick_mode = "parent"
+		if args.file_pick_mode == "parent" then
+			state.file_pick_mode = "parent"
 		else
-			state.bookmark_file_pick_mode = "hover"
+			state.file_pick_mode = "hover"
 		end
 
 		state.notify = {

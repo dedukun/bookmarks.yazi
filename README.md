@@ -85,7 +85,7 @@ require("bookmarks"):setup({
 	last_directory = { enable = false, persist = false },
 	persist = "none",
 	desc_format = "full",
-	bookmark_file_pick_mode = "hover",
+	file_pick_mode = "hover",
 	notify = {
 		enable = false,
 		timeout = 1,
@@ -136,7 +136,7 @@ There are two possible values for this option:
 | `full`   | The default, it shows the full path of the bookmark, i.e., the parent folder + the hovered file |
 | `parent` | Only shows the parent folder of the bookmark                                                    |
 
-### `bookmark_file_pick_mode`
+### `file_pick_mode`
 
 The mode for choosing which directory to bookmark.
 
