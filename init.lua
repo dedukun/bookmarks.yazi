@@ -37,14 +37,14 @@ local _get_bookmark_file = ya.sync(function(state)
 	local folder = cx.active.current
 
 	if state.file_pick_mode == "parent" or not folder.hovered then
-		return { url = folder.cwd, is_cwd = true }
+		return { url = folder.cwd, is_parent = true }
 	end
-	return { url = folder.hovered.url, is_cwd = false }
+	return { url = folder.hovered.url, is_parent = false }
 end)
 
 local _generate_description = ya.sync(function(state, file)
 	-- if this is true, we don't have information about the folder, so just return the folder url
-	if file.is_cwd then
+	if file.is_parent then
 		return tostring(file.url)
 	end
 
@@ -106,6 +106,7 @@ local _save_last_directory = ya.sync(function(state, persist)
 			on = "'",
 			desc = _generate_description(file),
 			path = tostring(file.url),
+			is_parent = file.is_parent,
 		}
 	end)
 
@@ -134,6 +135,7 @@ local save_bookmark = ya.sync(function(state, idx)
 		on = SUPPORTED_KEYS[idx].on,
 		desc = _generate_description(file),
 		path = tostring(file.url),
+		is_parent = file.is_parent,
 	}
 
 	if state.persist then
@@ -217,7 +219,11 @@ return {
 		end
 
 		if action == "jump" then
-			ya.manager_emit("reveal", { bookmarks[selected].path })
+			if bookmarks[selected].is_parent then
+				ya.manager_emit("cd", { bookmarks[selected].path })
+			else
+				ya.manager_emit("reveal", { bookmarks[selected].path })
+			end
 		elseif action == "delete" then
 			delete_bookmark(selected)
 		end
