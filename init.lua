@@ -33,17 +33,18 @@ local _get_real_index = ya.sync(function(state, idx)
 	return nil
 end)
 
-local _get_hovered_file = ya.sync(function()
+local _get_bookmark_file = ya.sync(function(state)
 	local folder = cx.active.current
-	if not folder.hovered then
-		return { url = folder.cwd, is_cwd = true }
+
+	if state.file_pick_mode == "parent" or not folder.hovered then
+		return { url = folder.cwd, is_parent = true }
 	end
-	return { url = folder.hovered.url, is_cwd = false }
+	return { url = folder.hovered.url, is_parent = false }
 end)
 
 local _generate_description = ya.sync(function(state, file)
 	-- if this is true, we don't have information about the folder, so just return the folder url
-	if file.is_cwd then
+	if file.is_parent then
 		return tostring(file.url)
 	end
 
@@ -94,7 +95,7 @@ local _save_last_directory = ya.sync(function(state, persist)
 	end
 
 	ps.sub("cd", function()
-		local file = _get_hovered_file()
+		local file = _get_bookmark_file()
 		state.last_dir = state.curr_dir
 
 		if persist and state.last_dir then
@@ -105,11 +106,12 @@ local _save_last_directory = ya.sync(function(state, persist)
 			on = "'",
 			desc = _generate_description(file),
 			path = tostring(file.url),
+			is_parent = file.is_parent,
 		}
 	end)
 
 	ps.sub("hover", function()
-		local file = _get_hovered_file()
+		local file = _get_bookmark_file()
 		state.curr_dir.desc = _generate_description(file)
 		state.curr_dir.path = tostring(file.url)
 	end)
@@ -120,7 +122,7 @@ end)
 -- ***********************************************
 
 local save_bookmark = ya.sync(function(state, idx)
-	local file = _get_hovered_file()
+	local file = _get_bookmark_file()
 
 	state.bookmarks = state.bookmarks or {}
 
@@ -133,6 +135,7 @@ local save_bookmark = ya.sync(function(state, idx)
 		on = SUPPORTED_KEYS[idx].on,
 		desc = _generate_description(file),
 		path = tostring(file.url),
+		is_parent = file.is_parent,
 	}
 
 	if state.persist then
@@ -216,7 +219,11 @@ return {
 		end
 
 		if action == "jump" then
-			ya.manager_emit("reveal", { bookmarks[selected].path })
+			if bookmarks[selected].is_parent then
+				ya.manager_emit("cd", { bookmarks[selected].path })
+			else
+				ya.manager_emit("reveal", { bookmarks[selected].path })
+			end
 		elseif action == "delete" then
 			delete_bookmark(selected)
 		end
@@ -244,6 +251,12 @@ return {
 			state.desc_format = "parent"
 		else
 			state.desc_format = "full"
+		end
+
+		if args.file_pick_mode == "parent" then
+			state.file_pick_mode = "parent"
+		else
+			state.file_pick_mode = "hover"
 		end
 
 		state.notify = {
