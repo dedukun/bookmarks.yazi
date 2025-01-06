@@ -216,11 +216,8 @@ local delete_all_bookmarks = ya.sync(function(state)
 end)
 
 return {
-	entry = function(_, job_or_args)
-		-- TODO: DEPRECATE IN Yazi 0.4
-		-- https://github.com/sxyazi/yazi/pull/1966
-		local args = job_or_args.args or job_or_args
-		local action = args[1]
+	entry = function(_, job)
+		local action = job.args[1]
 		if not action then
 			return
 		end
@@ -258,10 +255,7 @@ return {
 			return
 		end
 
-		-- TODO: DEPRECATED Yazi 0.4
-		if args.save_last_directory then
-			_save_last_directory()
-		elseif type(args.last_directory) == "table" then
+		if type(args.last_directory) == "table" then
 			if args.last_directory.enable then
 				_save_last_directory(args.last_directory.persist)
 			end
