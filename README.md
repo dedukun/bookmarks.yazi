@@ -35,22 +35,22 @@ Add this to your `keymap.toml`:
 ```toml
 [[manager.prepend_keymap]]
 on = [ "m" ]
-run = "plugin bookmarks --args=save"
+run = "plugin bookmarks save"
 desc = "Save current position as a bookmark"
 
 [[manager.prepend_keymap]]
 on = [ "'" ]
-run = "plugin bookmarks --args=jump"
+run = "plugin bookmarks jump"
 desc = "Jump to a bookmark"
 
 [[manager.prepend_keymap]]
 on = [ "b", "d" ]
-run = "plugin bookmarks --args=delete"
+run = "plugin bookmarks delete"
 desc = "Delete a bookmark"
 
 [[manager.prepend_keymap]]
 on = [ "b", "D" ]
-run = "plugin bookmarks --args=delete_all"
+run = "plugin bookmarks delete_all"
 desc = "Delete all bookmarks"
 ```
 
