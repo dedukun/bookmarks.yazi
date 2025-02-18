@@ -92,7 +92,10 @@ end)
 
 local _save_last_directory = ya.sync(function(state, persist)
 	if persist then
-		ps.sub_remote("@bookmarks-lastdir", function(body) state.curr_dir = body end)
+		ps.sub_remote("@bookmarks-lastdir", function(body)
+			state.curr_dir = body
+			state.curr_dir.on = state.last_directory_key
+		end)
 	end
 
 	ps.sub("cd", function()
@@ -104,7 +107,7 @@ local _save_last_directory = ya.sync(function(state, persist)
 		end
 
 		state.curr_dir = {
-			on = "'",
+			on = state.last_directory_key,
 			desc = _generate_description(file),
 			path = tostring(file.url),
 			is_parent = file.is_parent,
@@ -216,6 +219,14 @@ local delete_all_bookmarks = ya.sync(function(state)
 	end
 end)
 
+local jump_to_last = ya.sync(function(state)
+	if state.last_dir.is_parent then
+		ya.manager_emit("cd", { state.last_dir.is_parent })
+	else
+		ya.manager_emit("reveal", { state.last_dir.is_parent })
+	end
+end)
+
 return {
 	entry = function(_, job)
 		local action = job.args[1]
@@ -229,10 +240,10 @@ return {
 				save_bookmark(key)
 			end
 			return
-		end
-
-		if action == "delete_all" then
+		elseif action == "delete_all" then
 			return delete_all_bookmarks()
+		elseif action == "jump_last" then
+			return jump_to_last()
 		end
 
 		local bookmarks = all_bookmarks(action == "jump")
@@ -258,6 +269,11 @@ return {
 
 		if type(args.last_directory) == "table" then
 			if args.last_directory.enable then
+				state.last_directory_key = "'"
+				if type(args.last_directory.key) == "string" then
+					state.last_directory_key = args.last_directory.key
+				end
+
 				_save_last_directory(args.last_directory.persist)
 			end
 		end
