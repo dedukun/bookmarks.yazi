@@ -118,11 +118,13 @@ local _save_last_directory = ya.sync(function(state, persist)
 	end)
 end)
 
+local _is_custom_desc_input_enabled = ya.sync(function(state) return state.custom_desc_input end)
+
 -- ***********************************************
 -- **============= C O M M A N D S =============**
 -- ***********************************************
 
-local save_bookmark = ya.sync(function(state, idx)
+local save_bookmark = ya.sync(function(state, idx, custom_desc)
 	local file = _get_bookmark_file()
 
 	state.bookmarks = state.bookmarks or {}
@@ -132,9 +134,14 @@ local save_bookmark = ya.sync(function(state, idx)
 		_idx = #state.bookmarks + 1
 	end
 
+	local bookmark_desc = tostring(file.url)
+	if custom_desc then
+		bookmark_desc = tostring(custom_desc)
+	end
+
 	state.bookmarks[_idx] = {
 		on = SUPPORTED_KEYS[idx].on,
-		desc = _generate_description(file),
+		desc = bookmark_desc,
 		path = tostring(file.url),
 		is_parent = file.is_parent,
 	}
@@ -226,6 +233,19 @@ return {
 		if action == "save" then
 			local key = ya.which { cands = SUPPORTED_KEYS, silent = true }
 			if key then
+				if _is_custom_desc_input_enabled() then
+					local value, event = ya.input {
+						title = "Save with custom description:",
+						position = { "top-center", y = 3, w = 60 },
+						value = tostring(_get_bookmark_file().url),
+					}
+					if event ~= 1 then
+						return
+					end
+
+					save_bookmark(key, value)
+					return
+				end
 				save_bookmark(key)
 			end
 			return
@@ -277,6 +297,10 @@ return {
 			state.file_pick_mode = "parent"
 		else
 			state.file_pick_mode = "hover"
+		end
+
+		if type(args.custom_desc_input) == "boolean" then
+			state.custom_desc_input = args.custom_desc_input
 		end
 
 		state.notify = {

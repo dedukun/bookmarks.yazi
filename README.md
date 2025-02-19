@@ -66,6 +66,7 @@ require("bookmarks"):setup({
 	persist = "none",
 	desc_format = "full",
 	file_pick_mode = "hover",
+	custom_desc_input = false,
 	notify = {
 		enable = false,
 		timeout = 1,
@@ -129,3 +130,9 @@ By default the notification has a 1 second timeout that can be changed with `not
 
 Furthermore, you can customize the notification messages with `notify.message`.
 For the `new` and `delete` messages, the `<key>` and `<folder>` keywords can be used, which will be replaced by the respective new/deleted bookmark's associated key and folder.
+
+### `custom_desc_input`
+
+When enabled, user can change description for new bookmark before it is saved.
+
+By default the custom description input is filled with path.
