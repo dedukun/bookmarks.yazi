@@ -118,9 +118,7 @@ local _save_last_directory = ya.sync(function(state, persist)
 	end)
 end)
 
-local _is_custom_desc_input_enabled = ya.sync(function(state, persist)
-	return state.custom_desc_input
-end)
+local _is_custom_desc_input_enabled = ya.sync(function(state) return state.custom_desc_input end)
 
 -- ***********************************************
 -- **============= C O M M A N D S =============**
@@ -135,7 +133,7 @@ local save_bookmark = ya.sync(function(state, idx, custom_desc)
 	if not _idx then
 		_idx = #state.bookmarks + 1
 	end
-	
+
 	local bookmark_desc = tostring(file.url)
 	if custom_desc then
 		bookmark_desc = tostring(custom_desc)
@@ -236,11 +234,10 @@ return {
 			local key = ya.which { cands = SUPPORTED_KEYS, silent = true }
 			if key then
 				if _is_custom_desc_input_enabled() then
-					local file = _get_bookmark_file()
 					local value, event = ya.input {
 						title = "Save with custom description:",
 						position = { "top-center", y = 3, w = 60 },
-						value = tostring(file.url) 
+						value = tostring(_get_bookmark_file().url),
 					}
 					if event ~= 1 then
 						return
@@ -249,7 +246,6 @@ return {
 					save_bookmark(key, value)
 					return
 				end
-
 				save_bookmark(key)
 			end
 			return
