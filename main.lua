@@ -272,14 +272,14 @@ return {
 		end
 
 		if action == "jump" then
+			if get_last_mode() == "jump" then
+				save_last_jump()
+			end
+
 			if bookmarks[selected].is_parent then
 				ya.manager_emit("cd", { bookmarks[selected].path })
 			else
 				ya.manager_emit("reveal", { bookmarks[selected].path })
-			end
-
-			if get_last_mode() == "jump" then
-				save_last_jump()
 			end
 		elseif action == "delete" then
 			delete_bookmark(selected)
