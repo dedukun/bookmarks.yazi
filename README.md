@@ -88,11 +88,11 @@ There's also the option to enable persistence to this automatic bookmark.
 
 Finally, there's a `mode` option with the following options:
 
-| Value  | Description                                         |
-| ------ | --------------------------------------------------- |
-| `jump` | Default, It saves the last used mark                |
-| `mark` | It saves the last created mark                      |
-| `dir`  | It saves the last visited directory (old behaviour) |
+| Value  | Description                                                  |
+| ------ | ------------------------------------------------------------ |
+| `jump` | It saves the position before the last used mark              |
+| `mark` | It saves the last created mark                               |
+| `dir`  | Default, it saves the last visited directory (old behaviour) |
 
 ### `persist`
 

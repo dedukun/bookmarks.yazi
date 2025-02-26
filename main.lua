@@ -313,14 +313,15 @@ return {
 				elseif args.last_directory.mode == "jump" then
 					state.last_persist = args.last_directory.persist
 					state.last_mode = "jump"
-				elseif args.last_directory.mode == "jump" then
+				elseif args.last_directory.mode == "dir" then
 					state.last_persist = args.last_directory.persist
 					state.last_mode = "dir"
 					save_last_dir()
 				else
 					-- default
 					state.last_persist = args.last_directory.persist
-					state.last_mode = "jump"
+					state.last_mode = "dir"
+					save_last_dir()
 				end
 
 				if args.last_directory.persist then
