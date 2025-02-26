@@ -62,7 +62,7 @@ The following are the default configurations:
 ```lua
 -- ~/.config/yazi/init.lua
 require("bookmarks"):setup({
-	last_directory = { enable = false, persist = false, mode="jump" },
+	last_directory = { enable = false, persist = false, mode="dir" },
 	persist = "none",
 	desc_format = "full",
 	file_pick_mode = "hover",
