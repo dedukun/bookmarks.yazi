@@ -90,26 +90,43 @@ local _save_state = ya.sync(function(state, bookmarks)
 	ps.pub_to(0, "@bookmarks", save_state)
 end)
 
-local _save_last_directory = ya.sync(function(state, persist)
-	if persist then
-		ps.sub_remote("@bookmarks-lastdir", function(body) state.curr_dir = body end)
+local _load_last = ya.sync(function(state)
+	ps.sub_remote("@bookmarks-last", function(body)
+		state.last_dir = body
+
+		if state.last_mode ~= "dir" then
+			ps.unsub_remote("@bookmarks-last")
+		end
+	end)
+end)
+
+local _save_last = ya.sync(function(state, persist, imediate)
+	local file = _get_bookmark_file()
+
+	local curr = {
+		on = "'",
+		desc = _generate_description(file),
+		path = tostring(file.url),
+		is_parent = file.is_parent,
+	}
+
+	if imediate then
+		state.curr_dir = nil
+		state.last_dir = curr
+	else
+		state.last_dir = state.curr_dir
+		state.curr_dir = curr
 	end
 
-	ps.sub("cd", function()
-		local file = _get_bookmark_file()
-		state.last_dir = state.curr_dir
+	if persist and state.last_dir then
+		ps.pub_to(0, "@bookmarks-last", state.last_dir)
+	end
+end)
 
-		if persist and state.last_dir then
-			ps.pub_to(0, "@bookmarks-lastdir", state.last_dir)
-		end
+local get_last_mode = ya.sync(function(state) return state.last_mode end)
 
-		state.curr_dir = {
-			on = "'",
-			desc = _generate_description(file),
-			path = tostring(file.url),
-			is_parent = file.is_parent,
-		}
-	end)
+local save_last_dir = ya.sync(function(state)
+	ps.sub("cd", function() _save_last(state.last_persist, false) end)
 
 	ps.sub("hover", function()
 		local file = _get_bookmark_file()
@@ -117,6 +134,10 @@ local _save_last_directory = ya.sync(function(state, persist)
 		state.curr_dir.path = tostring(file.url)
 	end)
 end)
+
+local save_last_jump = ya.sync(function(state) _save_last(state.last_persist, true) end)
+
+local save_last_mark = ya.sync(function(state) _save_last(state.last_persist, true) end)
 
 local _is_custom_desc_input_enabled = ya.sync(function(state) return state.custom_desc_input end)
 
@@ -177,6 +198,10 @@ local save_bookmark = ya.sync(function(state, idx, custom_desc)
 		message, _ = message:gsub("<key>", state.bookmarks[_idx].on)
 		message, _ = message:gsub("<folder>", state.bookmarks[_idx].desc)
 		_send_notification(message)
+	end
+
+	if get_last_mode() == "mark" then
+		save_last_mark()
 	end
 end)
 
@@ -262,6 +287,10 @@ return {
 		end
 
 		if action == "jump" then
+			if get_last_mode() == "jump" then
+				save_last_jump()
+			end
+
 			if bookmarks[selected].is_parent then
 				ya.manager_emit("cd", { bookmarks[selected].path })
 			else
@@ -278,7 +307,26 @@ return {
 
 		if type(args.last_directory) == "table" then
 			if args.last_directory.enable then
-				_save_last_directory(args.last_directory.persist)
+				if args.last_directory.mode == "mark" then
+					state.last_persist = args.last_directory.persist
+					state.last_mode = "mark"
+				elseif args.last_directory.mode == "jump" then
+					state.last_persist = args.last_directory.persist
+					state.last_mode = "jump"
+				elseif args.last_directory.mode == "dir" then
+					state.last_persist = args.last_directory.persist
+					state.last_mode = "dir"
+					save_last_dir()
+				else
+					-- default
+					state.last_persist = args.last_directory.persist
+					state.last_mode = "dir"
+					save_last_dir()
+				end
+
+				if args.last_directory.persist then
+					_load_last()
+				end
 			end
 		end
 

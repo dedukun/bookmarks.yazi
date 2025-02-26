@@ -23,10 +23,10 @@ ya pack -a dedukun/bookmarks
 
 ## Import/Export bookmarks
 
-This plugin uses [Yazi's DDS](https://yazi-rs.github.io/docs/dds/) for bookmark persistence, as such, 
+This plugin uses [Yazi's DDS](https://yazi-rs.github.io/docs/dds/) for bookmark persistence, as such,
 the bookmarks are saved in DDS's state file (`~/.local/state/yazi/.dds` on Linux and `C:\Users\USERNAME\AppData\Roaming\yazi\state\.dds` on Windows)
 
-***NOTE:*** This system may be used by other plugins that you have installed, so this file might have more data than just the bookmarks.
+**_NOTE:_** This system may be used by other plugins that you have installed, so this file might have more data than just the bookmarks.
 
 ## Configuration
 
@@ -62,7 +62,7 @@ The following are the default configurations:
 ```lua
 -- ~/.config/yazi/init.lua
 require("bookmarks"):setup({
-	last_directory = { enable = false, persist = false },
+	last_directory = { enable = false, persist = false, mode="dir" },
 	persist = "none",
 	desc_format = "full",
 	file_pick_mode = "hover",
@@ -85,6 +85,14 @@ When enabled, a new bookmark is automatically created in `'` which allows the us
 the last directory.
 
 There's also the option to enable persistence to this automatic bookmark.
+
+Finally, there's a `mode` option with the following options:
+
+| Value  | Description                                                  |
+| ------ | ------------------------------------------------------------ |
+| `jump` | It saves the position before the last used mark              |
+| `mark` | It saves the last created mark                               |
+| `dir`  | Default, it saves the last visited directory (old behaviour) |
 
 ### `persist`
 
