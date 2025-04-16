@@ -6,7 +6,7 @@ https://github.com/dedukun/bookmarks.yazi/assets/25795432/9a9fe345-dd06-442e-99f
 
 ## Requirements
 
-- [Yazi](https://github.com/sxyazi/yazi) v25.2.7+
+- [Yazi](https://github.com/sxyazi/yazi) v25.4.8+
 
 ## Features
 

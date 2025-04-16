@@ -1,4 +1,4 @@
---- @since 25.2.7
+--- @since 25.4.8
 -- stylua: ignore
 local SUPPORTED_KEYS = {
 	{ on = "0"}, { on = "1"}, { on = "2"}, { on = "3"}, { on = "4"},
@@ -50,7 +50,7 @@ local _generate_description = ya.sync(function(state, file)
 	end
 
 	if state.desc_format == "parent" then
-		return tostring(file.url:parent())
+		return tostring(file.url.parent)
 	end
 	-- full description
 	return tostring(file.url)
@@ -263,9 +263,9 @@ return {
 
 		if action == "jump" then
 			if bookmarks[selected].is_parent then
-				ya.manager_emit("cd", { bookmarks[selected].path })
+				ya.mgr_emit("cd", { bookmarks[selected].path })
 			else
-				ya.manager_emit("reveal", { bookmarks[selected].path })
+				ya.mgr_emit("reveal", { bookmarks[selected].path })
 			end
 		elseif action == "delete" then
 			delete_bookmark(selected)
