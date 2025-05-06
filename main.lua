@@ -155,7 +155,7 @@ local save_bookmark = ya.sync(function(state, idx, custom_desc)
 		_idx = #state.bookmarks + 1
 	end
 
-	local bookmark_desc = tostring(file.url)
+	local bookmark_desc = tostring(_generate_description(file))
 	if custom_desc then
 		bookmark_desc = tostring(custom_desc)
 	end
