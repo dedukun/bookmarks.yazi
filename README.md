@@ -67,6 +67,7 @@ require("bookmarks"):setup({
 	desc_format = "full",
 	file_pick_mode = "hover",
 	custom_desc_input = false,
+	show_keys = false,
 	notify = {
 		enable = false,
 		timeout = 1,
@@ -144,3 +145,13 @@ For the `new` and `delete` messages, the `<key>` and `<folder>` keywords can be 
 When enabled, user can change description for new bookmark before it is saved.
 
 By default the custom description input is filled with path.
+
+### `show_keys`
+
+When enabled, saving a new bookmark will display a list of all available keys.
+
+If a key already has a saved bookmark, its description will be shown.
+
+This helps prevent accidental overwriting of existing bookmarks.
+
+By default no information is shown.
