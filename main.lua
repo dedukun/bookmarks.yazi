@@ -1,18 +1,18 @@
 --- @since 25.4.8
 -- stylua: ignore
 local SUPPORTED_KEYS = {
-	{ on = "0"}, { on = "1"}, { on = "2"}, { on = "3"}, { on = "4"},
-	{ on = "5"}, { on = "6"}, { on = "7"}, { on = "8"}, { on = "9"},
-	{ on = "A"}, { on = "B"}, { on = "C"}, { on = "D"}, { on = "E"},
-	{ on = "F"}, { on = "G"}, { on = "H"}, { on = "I"}, { on = "J"},
-	{ on = "K"}, { on = "L"}, { on = "M"}, { on = "N"}, { on = "O"},
-	{ on = "P"}, { on = "Q"}, { on = "R"}, { on = "S"}, { on = "T"},
-	{ on = "U"}, { on = "V"}, { on = "W"}, { on = "X"}, { on = "Y"}, { on = "Z"},
-	{ on = "a"}, { on = "b"}, { on = "c"}, { on = "d"}, { on = "e"},
-	{ on = "f"}, { on = "g"}, { on = "h"}, { on = "i"}, { on = "j"},
-	{ on = "k"}, { on = "l"}, { on = "m"}, { on = "n"}, { on = "o"},
-	{ on = "p"}, { on = "q"}, { on = "r"}, { on = "s"}, { on = "t"},
-	{ on = "u"}, { on = "v"}, { on = "w"}, { on = "x"}, { on = "y"}, { on = "z"},
+	{ on = "0", desc = "Free" }, { on = "1", desc = "Free" }, { on = "2", desc = "Free" }, { on = "3", desc = "Free" }, { on = "4", desc = "Free"},
+	{ on = "5", desc = "Free" }, { on = "6", desc = "Free" }, { on = "7", desc = "Free" }, { on = "8", desc = "Free" }, { on = "9", desc = "Free"},
+	{ on = "A", desc = "Free" }, { on = "B", desc = "Free" }, { on = "C", desc = "Free" }, { on = "D", desc = "Free" }, { on = "E", desc = "Free"},
+	{ on = "F", desc = "Free" }, { on = "G", desc = "Free" }, { on = "H", desc = "Free" }, { on = "I", desc = "Free" }, { on = "J", desc = "Free"},
+	{ on = "K", desc = "Free" }, { on = "L", desc = "Free" }, { on = "M", desc = "Free" }, { on = "N", desc = "Free" }, { on = "O", desc = "Free"},
+	{ on = "P", desc = "Free" }, { on = "Q", desc = "Free" }, { on = "R", desc = "Free" }, { on = "S", desc = "Free" }, { on = "T", desc = "Free"},
+	{ on = "U", desc = "Free" }, { on = "V", desc = "Free" }, { on = "W", desc = "Free" }, { on = "X", desc = "Free" }, { on = "Y", desc = "Free"}, { on = "Z", desc = "Free" },
+	{ on = "a", desc = "Free" }, { on = "b", desc = "Free" }, { on = "c", desc = "Free" }, { on = "d", desc = "Free" }, { on = "e", desc = "Free"},
+	{ on = "f", desc = "Free" }, { on = "g", desc = "Free" }, { on = "h", desc = "Free" }, { on = "i", desc = "Free" }, { on = "j", desc = "Free"},
+	{ on = "k", desc = "Free" }, { on = "l", desc = "Free" }, { on = "m", desc = "Free" }, { on = "n", desc = "Free" }, { on = "o", desc = "Free"},
+	{ on = "p", desc = "Free" }, { on = "q", desc = "Free" }, { on = "r", desc = "Free" }, { on = "s", desc = "Free" }, { on = "t", desc = "Free"},
+	{ on = "u", desc = "Free" }, { on = "v", desc = "Free" }, { on = "w", desc = "Free" }, { on = "x", desc = "Free" }, { on = "y", desc = "Free"}, { on = "z", desc = "Free" },
 }
 
 local _send_notification = ya.sync(
@@ -139,11 +139,26 @@ local save_last_jump = ya.sync(function(state) _save_last(state.last_persist, tr
 
 local save_last_mark = ya.sync(function(state) _save_last(state.last_persist, true) end)
 
+local _is_show_keys_enabled = ya.sync(function(state) return state.show_keys end)
+
 local _is_custom_desc_input_enabled = ya.sync(function(state) return state.custom_desc_input end)
 
 -- ***********************************************
 -- **============= C O M M A N D S =============**
 -- ***********************************************
+
+local get_updated_keys = ya.sync(function(state, keys)
+	if state.bookmarks then
+		for _, bookmarks_value in pairs(state.bookmarks) do
+			for _, keys_value in pairs(keys) do
+				if keys_value.on == bookmarks_value.on then
+					keys_value.desc = bookmarks_value.desc
+				end
+			end
+		end
+	end
+	return keys
+end)
 
 local save_bookmark = ya.sync(function(state, idx, custom_desc)
 	local file = _get_bookmark_file()
@@ -256,7 +271,10 @@ return {
 		end
 
 		if action == "save" then
-			local key = ya.which { cands = SUPPORTED_KEYS, silent = true }
+			if _is_show_keys_enabled() then
+				SUPPORTED_KEYS = get_updated_keys(SUPPORTED_KEYS)
+			end
+			local key = ya.which { cands = SUPPORTED_KEYS, silent = not _is_show_keys_enabled() }
 			if key then
 				if _is_custom_desc_input_enabled() then
 					local value, event = ya.input {
@@ -349,6 +367,10 @@ return {
 
 		if type(args.custom_desc_input) == "boolean" then
 			state.custom_desc_input = args.custom_desc_input
+		end
+
+		if type(args.show_keys) == "boolean" then
+			state.show_keys = args.show_keys
 		end
 
 		state.notify = {
