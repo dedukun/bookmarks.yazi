@@ -182,6 +182,13 @@ local save_bookmark = ya.sync(function(state, idx, custom_desc)
 		is_parent = file.is_parent,
 	}
 
+	if state.notify and state.notify.enable then
+		local message = state.notify.message.new
+		message, _ = message:gsub("<key>", state.bookmarks[_idx].on)
+		message, _ = message:gsub("<folder>", state.bookmarks[_idx].desc)
+		_send_notification(message)
+	end
+		
 	-- Custom sorting function
 	table.sort(state.bookmarks, function(a, b)
 		local key_a, key_b = a.on, b.on
@@ -206,13 +213,6 @@ local save_bookmark = ya.sync(function(state, idx, custom_desc)
 
 	if state.persist then
 		_save_state(state.bookmarks)
-	end
-
-	if state.notify and state.notify.enable then
-		local message = state.notify.message.new
-		message, _ = message:gsub("<key>", state.bookmarks[_idx].on)
-		message, _ = message:gsub("<folder>", state.bookmarks[_idx].desc)
-		_send_notification(message)
 	end
 
 	if get_last_mode() == "mark" then
